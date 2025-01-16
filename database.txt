@@ -1,0 +1,314 @@
+conn.php
+<?php
+$servername = "localhost";
+$username = "root";
+$password = "";
+$dbname="subha";
+
+// Create connection
+$conn = mysqli_connect($servername, $username, $password,$dbname);
+
+// Check connection
+if (!$conn) {
+  die("Connection failed: " . mysqli_connect_error());
+}
+echo "Connected successfully";
+?>
+
+login.php
+<?php
+session_start(); 
+
+
+$validUsername = "admin";
+$validPassword = "password";
+
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $username = $_POST['username'];
+    $password = $_POST['password'];
+
+    if ($username === $validUsername && $password === $validPassword) {
+        // Store user info in session
+        $_SESSION['username'] = $username;
+        $_SESSION['loggedin'] = true;
+
+        // Redirect to a protected page
+        header("Location: homepage.php");
+        exit();
+    } else {
+        $error = "Invalid username or password!";
+    }
+}
+?>
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login</title>
+</head>
+<body>
+    <form method="POST" action="">
+        <h2>Login</h2>
+        <?php if (!empty($error)) echo "<p style='color:red;'>$error</p>"; ?>
+        <label for="username">Username:</label>
+        <input type="text" name="username" required><br>
+        <label for="password">Password:</label>
+        <input type="password" name="password" required><br>
+        <button type="submit">Login</button>
+    </form>
+</body>
+</html>
+homepage.php
+<html>
+	<body>
+	<center>
+	<a href="login.php">Home</a><br>
+	<a href="insertion.php">Add Student details</a><br>
+	<a href="viewall.php">View All Students</a><br>
+	<a href="search.php">Search a Student with a Student Id</a><br>
+
+	<a href="delete.php">Delete a Student </a><br>
+	<a href="update1.php">Update Student details</a><br>
+	<a href="logout.php">Logout</a><br>
+	</center>
+	</body>
+</html>
+insertion.php
+<?php
+include 'conn.php';
+if(isset($_POST['submit']))
+{
+	$fname=$_POST['name'];
+	$sem=$_POST['semester'];
+	$crse=$_POST['course'];
+	$gender1=$_POST['gender'];
+	
+	// Handle hobbies as an array and join them into a single string
+   	 	if (isset($_POST['hobbies']))
+		 	{
+       			 $hobbies1 = implode(", ", $_POST['hobbies']); // Convert array to comma-separated string
+    			} 
+		else 
+			{
+        		$hobbies1 = ""; // If no hobbies are selected, set as empty
+    			}
+	$sql = "INSERT INTO student(Name,Semester,Course,Gender,Hobbies)VALUES ('$fname','$sem','$crse','$gender1','$hobbies1')";
+
+	if (mysqli_query($conn, $sql)) {
+  		header("Location: homepage.php");
+		} else {
+  		echo "Error: " . $sql . "<br>" . mysqli_error($conn);
+		}
+
+	mysqli_close($conn);
+}
+else
+{
+?>
+<html>
+	<body>
+	<center>
+		<form action="" method="post">
+		Student Name:
+		<input type="textbox" name="name"><br>
+		Semester:
+		<input type="textbox" name="semester"><br>
+		Course:
+		<input type="textbox" name="course"><br>
+		Gender:
+		<input type="radio" name="gender" value="female"> Female
+		<input type="radio" name="gender" value="male">Male<br>
+		Hobbies:
+		<input type="checkbox" name="hobbies[]" value="sports">Sports
+		<input type="checkbox" name="hobbies[]" value="reading">Reading
+		<input type="checkbox" name="hobbies[]" value="dance">Dance
+		<input type="checkbox" name="hobbies[]" value="music">Music<br>
+		<input type="submit" name="submit" value="Submit"><br>
+	</form>
+	</center>
+	</body>
+</html>
+<?php
+}
+?>
+delete.php
+<?php
+include 'conn.php';
+if(isset($_POST['submit']))
+{
+	$id1=$_POST['id'];
+	$sql = "DELETE FROM student WHERE studentid='$id1'";
+
+if (mysqli_query($conn, $sql)) {
+  header("Location: homepage.php");
+} else {
+  echo "Error deleting record: " . mysqli_error($conn);
+}
+
+
+	mysqli_close($conn);
+}
+else
+{
+?>
+<html>
+	<body>
+	<center>
+		<form action="" method="post">
+		Student Id:
+		<input type="textbox" name="id"><br>
+		
+		<input type="submit" name="submit" value="Submit"><br>
+	</form>
+	</center>
+	</body>
+</html>
+<?php
+}
+?>
+viewall.php
+<?php
+
+include 'conn.php';
+$sql = "SELECT * FROM student";
+$result = mysqli_query($conn, $sql);
+
+if (mysqli_num_rows($result) > 0) {
+  // output data of each row
+  while($row = mysqli_fetch_assoc($result)) {
+    echo "<br> id:   " . $row["studentid"]. " <br>Name:  " . $row["Name"]. "<br>Semester:  " . $row["Semester"]."<br>Course: " . $row["Course"]."<br>Gender:  ".$row["Gender"] ."<br>Hobbies:  ".$row["Hobbies"] ."<br>";
+  }
+} else {
+  echo "0 results";
+}
+
+mysqli_close($conn);
+?>
+<html>
+ <body>
+    <center>
+	<a href="homepage.php">< Back</a>
+    </center>
+ </body>
+</html>
+update1.php
+<?php
+include 'conn.php';
+
+
+
+if (isset($_GET['studentid'])) {
+    $studentid = $_GET['studentid'];
+
+    // Fetch the existing data for the given student ID
+    $sql = "SELECT * FROM student WHERE studentid = '$studentid'";
+    $result = mysqli_query($conn, $sql);
+
+    if (mysqli_num_rows($result) > 0) {
+        $student = mysqli_fetch_assoc($result);
+
+        // Redirect to the update page with student data
+        $query = http_build_query($student);
+        header("Location: update2.php?$query");
+        exit();
+    } else {
+        echo "No student found with ID: $studentid";
+    }
+}
+?>
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Retrieve Student Details</title>
+</head>
+<body>
+    <h2>Retrieve Student Details</h2>
+    <form method="GET" action="">
+        <label for="studentid">Student ID:</label>
+        <input type="text" name="studentid" id="studentid" required>
+        <button type="submit">Retrieve</button>
+    </form>
+</body>
+</html>
+update2.php
+<?php
+include 'conn.php';
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
+    // Handle form submission
+    $id = $_POST['id'];
+    $name = $_POST['name'];
+    $semester = $_POST['semester'];
+    $course = $_POST['course'];
+    $gender = $_POST['gender'];
+    $hobbies = isset($_POST['hobbies']) ? implode(", ", $_POST['hobbies']) : "";
+
+    // Update student details
+    $sql = "UPDATE student 
+            SET Name = '$name', Semester = '$semester', Course = '$course', Gender = '$gender', Hobbies = '$hobbies' 
+            WHERE studentid = '$id'";
+
+    if (mysqli_query($conn, $sql)) {
+        header("Location: homepage.php");
+    } else {
+        echo "Error: " . mysqli_error($conn);
+    }
+
+    mysqli_close($conn);
+    exit();
+}
+
+// Retrieve student data from query parameters
+if (isset($_GET['studentid'])) {
+    $student = $_GET;
+} else {
+    echo "No student data provided.";
+    exit();
+}
+?>
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Update Student Details</title>
+</head>
+<body>
+    <h2>Update Student Details</h2>
+    <form method="POST" action="">
+        <input type="hidden" name="id" value="<?php echo $student['studentid']; ?>">
+
+        <label for="name">Name:</label>
+        <input type="text" name="name" value="<?php echo $student['Name']; ?>" required><br><br>
+
+        <label for="semester">Semester:</label>
+        <input type="text" name="semester" value="<?php echo $student['Semester']; ?>" required><br><br>
+
+        <label for="course">Course:</label>
+        <input type="text" name="course" value="<?php echo $student['Course']; ?>" required><br><br>
+
+        <label for="gender">Gender:</label>
+        <input type="radio" name="gender" value="male" <?php if ($student['Gender'] == 'male') echo 'checked'; ?>> Male
+        <input type="radio" name="gender" value="female" <?php if ($student['Gender'] == 'female') echo 'checked'; ?>> Female<br><br>
+
+        <label for="hobbies">Hobbies:</label>
+        <?php $existingHobbies = explode(", ", $student['Hobbies']); ?>
+        <input type="checkbox" name="hobbies[]" value="sports" <?php if (in_array("sports", $existingHobbies)) echo 'checked'; ?>> Sports
+        <input type="checkbox" name="hobbies[]" value="music" <?php if (in_array("music", $existingHobbies)) echo 'checked'; ?>> Music
+        <input type="checkbox" name="hobbies[]" value="dance" <?php if (in_array("dance", $existingHobbies)) echo 'checked'; ?>> Dance
+        <input type="checkbox" name="hobbies[]" value="reading" <?php if (in_array("reading", $existingHobbies)) echo 'checked'; ?>> Reading<br><br>
+
+        <button type="submit" name="submit">Update</button>
+    </form>
+</body>
+</html>
+logout.php
+<?php
+session_start();
+// Destroying All Sessions
+if(session_destroy())
+{
+// Redirecting To Logout Page
+header("Location: login.php");
+exit();
+}
+?>
