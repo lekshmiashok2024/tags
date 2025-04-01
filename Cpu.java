@@ -12,6 +12,7 @@ class Cpu
   {
     int core;
     String manufacturer;
+    Scanner sc=new Scanner(System.in);
     Processor()
   {
     System.out.println("Enter the number of cores:");
@@ -24,9 +25,9 @@ class Cpu
   static class RAM
   {
   int memory;
+  Scanner sc=new Scanner(System.in);
   RAM()
   {
-  Scanner sc=new Scanner(System.in);
   System.out.println("Enter the RAM in GB:");
   memory=sc.nextInt();
   }
