@@ -40,33 +40,17 @@ class EvenRunnable implements Runnable {
 
 public class Fibeven {
     public static void main(String[] args) {
-        printFibonacci(10); 
-        printEvenNumbers(1, 20); 
+        FibonacciRunnable fib=new FibonacciRunnable(10);
+        EvenRunnable even=new EvenRunnable(1, 20);
+        Thread fibThread=new Thread(fib);
+        Thread evenThread=new Thread(even);
+        fibThread.start();
+        evenThread.start();
     }
-
-    public static void printFibonacci(int count) {
-        int a = 0, b = 1;
-        System.out.println("Fibonacci Series:");
-        for (int i = 1; i <= count; i++) {
-            System.out.print(a + " ");
-            int next = a + b;
-            a = b;
-            b = next;
-        }
-        System.out.println();
-    }
-
-    public static void printEvenNumbers(int start, int end) {
-    System.out.println("Even Numbers from " + start + " to " + end + ":");
-    if (start % 2 != 0) { 
-        start++; 
-    }
-    for (int i = start; i <= end; i += 2) {
-        System.out.print(i + " ");
-    }
-    System.out.println();
 }
+        
 
-}
+    
+
 
 
