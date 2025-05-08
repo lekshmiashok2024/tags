@@ -54,12 +54,6 @@ public class Mulprimthread {
         PrimeNumbers pn = new PrimeNumbers(10);
 
         mt.start();
-        try {
-            mt.join();  
-        } catch (InterruptedException e) {
-            System.out.println(e);
-        }
-
         pn.start();
     }
 }
